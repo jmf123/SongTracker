@@ -114,7 +114,7 @@ namespace SongTracker.Classes
                 newSong.Name = newName;
                 if (saveFile.songExists(saveFile.GetSongs(), newSong))
                 {
-                    Console.WriteLine($"Add new song cancelled. { newSong.Name } already exists!\n");
+                    Console.WriteLine($"Add new song cancelled, { newSong.Name } already exists!\n");
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey();
                     return;
@@ -234,7 +234,7 @@ namespace SongTracker.Classes
                 booleanSong.Name = newName;
                 if (saveFile.songExists(saveFile.GetSongs(), booleanSong) && (selectedSong.Name != booleanSong.Name))
                 {
-                    Console.WriteLine($"Song name { songCopy.Name } already exists! Cancelling...");
+                    Console.WriteLine($"Song name { booleanSong.Name } already exists! Cancelling...");
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey();
                     return;
