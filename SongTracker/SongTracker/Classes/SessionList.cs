@@ -7,6 +7,9 @@ namespace SongTracker.Classes
 {
     class SessionList
     {
+        static string inputString;
+        static int inputInt;
+        static ConsoleCommand conCom = new ConsoleCommand();
         public SongMemory saveFile = new SongMemory();
         private List<Song> allSongs = new List<Song>();
         private List<Song> generatedList = new List<Song>();
@@ -20,16 +23,16 @@ namespace SongTracker.Classes
             Console.ForegroundColor = ConsoleColor.White;
             while (true)
             {
+                //END SESSION IF SONGS == 0
                 if(generatedList.Count == 0)
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("Training session has run out of songs!");
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey();
-                    Console.WriteLine("");
+                    conCom.AskInputKey("Press any key to continue...");
                     break;
                 }
+                //DISPLAY SONGS
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("Displaying top songs sorted by priority:");
                 Console.ForegroundColor = ConsoleColor.White;
@@ -43,16 +46,12 @@ namespace SongTracker.Classes
                     s.sessionDisplay();
                     i++;
                 }
-                Console.WriteLine("\nA = Select song\nB = End session");
-                char input = Console.ReadKey().KeyChar;
-                input = char.ToUpper(input);
-                Console.WriteLine("");
-                if (input.Equals('B'))
+                inputString = conCom.AskInputKey("\nA = Select song\nB = End session");
+                //END SESSION
+                if (inputString.Equals("B"))
                 {
-                    Console.WriteLine("Press Y to confirm End session");
-                    char endInput = Console.ReadKey().KeyChar;
-                    endInput = char.ToUpper(endInput);
-                    if (endInput.Equals('Y'))
+                    inputString = conCom.AskInputKey("Press Y to confirm End session");
+                    if (inputString.Equals("Y"))
                     {
                         Console.WriteLine("\nEnd session called\n");
                         break;
@@ -63,14 +62,13 @@ namespace SongTracker.Classes
                         continue;
                     }
                 }
-                if (input.Equals('A'))
+                //SELECT SONG
+                if (inputString.Equals("A"))
                 {
-                    Console.WriteLine("Write down the song number and press Enter");
-                    string selectedSongNumber = Console.ReadLine();
+                    inputInt = conCom.AskInputNumber("Write down the song number and press Enter");
                     try
                     {
-                        int number = int.Parse(selectedSongNumber.ToString());
-                        var selectedSong = generatedList[number - 1];
+                        var selectedSong = generatedList[inputInt - 1];
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.Write($"\n{ selectedSong.Name }");
                         Console.ForegroundColor = ConsoleColor.White;
@@ -79,7 +77,7 @@ namespace SongTracker.Classes
                     }
                     catch
                     {
-                        Console.WriteLine($"{ selectedSongNumber } in not a valid number!\n");
+                        Console.WriteLine($"Not a valid song number!\n");
                     }
                 }
             }
@@ -87,39 +85,36 @@ namespace SongTracker.Classes
         public void MarkSong(Song selectedSong)
         {
             var songCopy = selectedSong;
-            Console.WriteLine("A = Mark new performance\nB = Cancel");
-            char input = Console.ReadKey().KeyChar;
-            input = char.ToUpper(input);
-            Console.WriteLine("");
-            if (input.Equals('B'))
+            inputString = conCom.AskInputKey("A = Mark new performance\nB = Cancel");
+            //CANCEL SELECTED SONG
+            if (inputString.Equals("B"))
             {
                 return;
             }
-            else if (input.Equals('A'))
+            //MARK A NEW PERFORMANCE
+            else if (inputString.Equals("A"))
             {
                 Console.WriteLine("Great work!");
-                Console.WriteLine("On a scale from 1 to 10, how well did it go?");
-                string performanceInput = Console.ReadLine();
+                inputInt = conCom.AskInputNumber("On a scale from 1 to 10, how well did it go?");
                 try
                 {
-                    int number = int.Parse(performanceInput.ToString());
-                    if (number >= 1 && number <= 10)
+                    if (inputInt >= 1 && inputInt <= 10)
                     {
-                        selectedSong.LastPlayedPerformance = number;
+                        selectedSong.LastPlayedPerformance = inputInt;
                         selectedSong.LastPlaytime = DateTime.Now;
-                        Console.WriteLine($"You rated { selectedSong.Name } as { number }/10!\n");
+                        Console.WriteLine($"You rated { selectedSong.Name } as { inputInt }/10!\n");
                         var editedList = saveFile.EditSong(saveFile.GetSongs(), selectedSong);
                         saveFile.SaveSongs(editedList);
                         generatedList.Remove(songCopy);
                     }
                     else
                     {
-                        Console.WriteLine($"{ number } in not a valid rating!\n");
+                        Console.WriteLine($"{ inputInt } in not a valid rating!\n");
                     }
                 }
                 catch
                 {
-                    Console.WriteLine($"{ input } in not a valid number!\n");
+                    Console.WriteLine($"Not a valid number!\n");
                 }
             }
         }

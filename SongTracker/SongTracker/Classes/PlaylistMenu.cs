@@ -6,6 +6,9 @@ namespace SongTracker.Classes
 {
     class PlaylistMenu
     {
+        static string inputString;
+        static int inputInt;
+        static ConsoleCommand conCom = new ConsoleCommand();
         public static void StartMainMenu()
         {
             Console.WindowWidth = 110;
@@ -14,19 +17,16 @@ namespace SongTracker.Classes
             Console.ForegroundColor = ConsoleColor.White;
             while (true)
             {
+                //DISPLAY MAIN MENU
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Main Menu:");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("A = Start session\nS = Edit songs\nB = End program");
-                char input = Console.ReadKey().KeyChar;
-                input = char.ToUpper(input);
-                Console.WriteLine("");
-                if (input.Equals('B'))
+                inputString = conCom.AskInputKey("A = Start session\nS = Edit songs\nB = End program");
+                //END PROGRAM
+                if (inputString.Equals("B"))
                 {
-                    Console.WriteLine("Press Y to confirm End program");
-                    char endInput = Console.ReadKey().KeyChar;
-                    endInput = char.ToUpper(endInput);
-                    if (endInput.Equals('Y'))
+                    inputString = conCom.AskInputKey("Press Y to confirm End program");
+                    if (inputString.Equals("Y"))
                     {
                         break;
                     }
@@ -36,12 +36,14 @@ namespace SongTracker.Classes
                         continue;
                     }
                 }
-                switch (input)
+                switch (inputString)
                 {
-                    case 'A':
+                    //START SESSION
+                    case "A":
                         StartSession();
                         break;
-                    case 'S':
+                    //SONG EDITOR
+                    case "S":
                         StartSongEditor();
                         break;
                 }
@@ -49,25 +51,21 @@ namespace SongTracker.Classes
         }
         public static void StartSession()
         {
-            Console.WriteLine("Write down the number of songs you want in your playlist and press Enter");
-            string input = Console.ReadLine();
-            try {
-                int number = int.Parse(input.ToString());
-                if(!(number <= 0))
-                {
-                    var traingSession = new SessionList();
-                    traingSession.DisplaySongs(number);
-                }
-                else
-                {
-                    Console.WriteLine($"{ input } is not a valid number!\n");
-                }
-            } catch {
-                Console.WriteLine($"{ input } in not a valid number!\n");
+            inputInt = conCom.AskInputNumber("Write down the number of songs you want in your playlist and press Enter");
+            //CREATE SESSION
+            if (!(inputInt <= 0))
+            {
+                var traingSession = new SessionList();
+                traingSession.DisplaySongs(inputInt);
+            }
+            else
+            {
+                Console.WriteLine($"Not a valid number!\n");
             }
         }
         public static void StartSongEditor()
         {
+            //CREATE EDITOR
             Console.WriteLine("Song editor called...\n");
             var songEditor = new SongEditorList();
             songEditor.DisplaySongs();
