@@ -8,12 +8,16 @@ namespace SongTracker.Classes
 {
     class SongEditorList
     {
+        static string inputString;
+        static int inputInt;
+        static ConsoleCommand conCom = new ConsoleCommand();
         public SongMemory saveFile = new SongMemory();
         private List<Song> allSongs = new List<Song>();
         public void DisplaySongs()
         {
             while (true)
             {
+                //PRINT SONGS
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Song Editor Menu:");
                 Console.WriteLine("Displaying all available songs:");
@@ -31,16 +35,12 @@ namespace SongTracker.Classes
                     i++;
                 }
                 Console.WriteLine("");
-                Console.WriteLine("A = Add new song\nS = Select song\nB = End editor");
-                char input = Console.ReadKey().KeyChar;
-                input = char.ToUpper(input);
-                Console.WriteLine("");
-                if (input.Equals('B'))
+                inputString = conCom.AskInputKey("A = Add new song\nS = Select song\nB = End editor");
+                //END EDITOR
+                if (inputString.Equals("B"))
                 {
-                    Console.WriteLine("Press Y to confirm End editor");
-                    char endInput = Console.ReadKey().KeyChar;
-                    endInput = char.ToUpper(endInput);
-                    if (endInput.Equals('Y'))
+                    inputString = conCom.AskInputKey("Press Y to confirm End editor");
+                    if (inputString.Equals("Y"))
                     {
                         Console.WriteLine("");
                         Console.WriteLine("End editor called");
@@ -53,37 +53,34 @@ namespace SongTracker.Classes
                         continue;
                     }
                 }
-                if (input.Equals('A'))
+                //ADD SONG
+                if (inputString.Equals("A"))
                 {
                     Console.WriteLine("Adding new song...");
                     CreateSong();
                 }
-                if (input.Equals('S'))
+                //SELECT SONG
+                if (inputString.Equals("S"))
                 {
-                    Console.WriteLine("Write down a song number and press Enter");
-                    string selectedSongNumber = Console.ReadLine();
-                    try
+                    inputInt = conCom.AskInputNumber("Write down a song number and press Enter");
+                    if(inputInt >= 1 && inputInt <= 10)
                     {
-                        int number = int.Parse(selectedSongNumber.ToString());
-                        var selectedSong = allSongs[number - 1];
+                        var selectedSong = allSongs[inputInt - 1];
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.Write($"{ selectedSong.Name }");
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine(" selected");
-                        Console.WriteLine("A = Edit song\nD = Delete song\nB = Cancel\n");
-                        char editInput = Console.ReadKey().KeyChar;
-                        editInput = char.ToUpper(editInput);
-                        Console.WriteLine("");
-                        if (editInput.Equals('A'))
+                        inputString = conCom.AskInputKey("A = Edit song\nD = Delete song\nB = Cancel\n");
+                        //EDIT SONG
+                        if (inputString.Equals("A"))
                         {
                             EditSong(selectedSong);
                         }
-                        if (editInput.Equals('D'))
+                        //DELETE SONG
+                        if (inputString.Equals("D"))
                         {
-                            Console.WriteLine("Press Y to confirm deletion");
-                            char endInput = Console.ReadKey().KeyChar;
-                            endInput = char.ToUpper(endInput);
-                            if (endInput.Equals('Y'))
+                            inputString = conCom.AskInputKey("Press Y to confirm deletion");
+                            if (inputString.Equals("Y"))
                             {
                                 var deletedList = saveFile.DeleteSong(allSongs, selectedSong);
                                 saveFile.SaveSongs(deletedList);
@@ -97,9 +94,9 @@ namespace SongTracker.Classes
                             }
                         }
                     }
-                    catch
+                    else
                     {
-                        Console.WriteLine($"{ selectedSongNumber } in not a valid number!\n");
+                        Console.WriteLine($"Not a valid number!\n");
                     }
                 }
             }
@@ -107,21 +104,20 @@ namespace SongTracker.Classes
         public void CreateSong()
         {
             var newSong = new Song();
-            Console.WriteLine("Write down a new song name and press Enter\n(Empty => cancel)");
-            string newName = Console.ReadLine();
-            if (!newName.Equals(""))
+            //ADD NAME
+            inputString = conCom.AskInputString("Write down a new song name and press Enter\n(Empty => cancel)");
+            if (!inputString.Equals(""))
             {
-                newSong.Name = newName;
+                newSong.Name = inputString;
                 if (saveFile.songExists(saveFile.GetSongs(), newSong))
                 {
                     Console.WriteLine($"Add new song cancelled, { newSong.Name } already exists!\n");
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey();
+                    conCom.AskInputKey("Press any key to continue...");
                     return;
                 }
                 else
                 {
-                    Console.WriteLine($"{ newName } set to new name!\n");
+                    Console.WriteLine($"{ inputString } set to new name!\n");
                 }
             }
             else
@@ -129,25 +125,20 @@ namespace SongTracker.Classes
                 Console.WriteLine("Add new song cancelled.\n");
                 return;
             }
+            //ADD DATEIME
             DateTime newLastPlayed;
-            Console.WriteLine("Write down last playdate in 'DD.MM.YYYY' format and press Enter\n(Empty or invalid => cancel)");
-            string newPlaytime = Console.ReadLine();
-            if (!newPlaytime.Equals(""))
+            inputString = conCom.AskInputString("Write down last playdate in 'DD.MM.YYYY' format and press Enter\n(Empty or invalid => cancel)");
+            if (!inputString.Equals(""))
             {
-                try
+                newLastPlayed = conCom.StringToDatetime(inputString);
+                if(conCom.IsValidDatetime(newLastPlayed))
                 {
-                    newLastPlayed = DateTime.ParseExact(newPlaytime, "dd.MM.yyyy", null);
-                    if ((DateTime.Now - newLastPlayed).TotalDays < 0)
-                    {
-                        Console.WriteLine($"Add last playdate cancelled, { newPlaytime } is invalid.\n");
-                        return;
-                    }
                     newSong.LastPlaytime = newLastPlayed;
                     Console.WriteLine($"{ newLastPlayed:dd/MM/yyyy} set to last playdate!\n");
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Add last playdate cancelled, { newPlaytime } is invalid.\n");
+                    Console.WriteLine($"Add last playdate cancelled, { inputString } is invalid.\n");
                     return;
                 }
             }
@@ -156,27 +147,18 @@ namespace SongTracker.Classes
                 Console.WriteLine("Add new song cancelled.\n");
                 return;
             }
-            Console.WriteLine("Write down a song priority from 1 - 10 and press Enter\n(Empty or invalid => cancel)");
-            string newPriority = Console.ReadLine();
-            if (!newPriority.Equals(""))
+            //ADD PRIORITY
+            inputInt = conCom.AskInputNumber("Write down a song priority from 1 - 10 and press Enter\n(Empty or invalid => cancel)");
+            if (!inputInt.Equals(""))
             {
-                try
+                if (inputInt >= 0 && inputInt <= 10)
                 {
-                    int number = int.Parse(newPriority.ToString());
-                    if (number < 0 || number > 10)
-                    {
-                        Console.WriteLine($"Add new song cancelled, { newPriority } is invalid.\n");
-                        return;
-                    }
-                    else
-                    {
-                        newSong.Priority = number;
-                        Console.WriteLine($"{ newPriority } set to new priority!\n");
-                    }
+                    newSong.Priority = inputInt;
+                    Console.WriteLine($"{ inputInt } set to new priority!\n");
                 }
-                catch
+                else 
                 {
-                    Console.WriteLine($"Add new song cancelled, { newPriority } is invalid.\n");
+                    Console.WriteLine($"Add new song cancelled, invalid number.\n");
                     return;
                 }
             }
@@ -185,27 +167,18 @@ namespace SongTracker.Classes
                 Console.WriteLine("Add new song cancelled.\n");
                 return;
             }
-            Console.WriteLine("Write down your latest song performance from 1 - 10 and press Enter\n(Empty or invalid => cancel)");
-            string newPerformance = Console.ReadLine();
-            if (!newPerformance.Equals(""))
+            //ADD PERFORMANCE
+            inputInt = conCom.AskInputNumber("Write down your latest song performance from 1 - 10 and press Enter\n(Empty or invalid => cancel)");
+            if (!inputInt.Equals(""))
             {
-                try
+                if (inputInt >= 0 && inputInt <= 10)
                 {
-                    int number = int.Parse(newPerformance.ToString());
-                    if (number < 0 || number > 10)
-                    {
-                        Console.WriteLine($"Add new song cancelled, { newPerformance } is invalid.\n");
-                        return;
-                    }
-                    else
-                    {
-                        newSong.LastPlayedPerformance = number;
-                        Console.WriteLine($"{ newPerformance } set to new latest performance!\n");
-                    }
+                    newSong.LastPlayedPerformance = inputInt;
+                    Console.WriteLine($"{ inputInt } set to new latest performance!\n");
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Add new song cancelled, { newPerformance } is invalid.\n");
+                    Console.WriteLine($"Add new song cancelled, invalid number.\n");
                     return;
                 }
             }
@@ -214,155 +187,96 @@ namespace SongTracker.Classes
                 Console.WriteLine("Add new song cancelled.\n");
                 return;
             }
+            //SAVE ADDED SONG
             Console.WriteLine("Add new song completed.\n");
             var savedList = saveFile.AddSong(saveFile.GetSongs(), newSong);
             saveFile.SaveSongs(savedList);
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
-            Console.WriteLine("");
+            conCom.AskInputKey("Press any key to continue...");
         }
         public void EditSong(Song selectedSong)
         {
             var booleanSong = new Song();
             var songCopy = selectedSong;
             Console.WriteLine($"Editing { songCopy.Name }");
-            Console.WriteLine("Write down new song name and press Enter\n(Empty => skip)");
-            bool newNameEdited = false;
-            string newName = Console.ReadLine();
-            if (!newName.Equals(""))
+            //EDIT NAME
+            inputString = conCom.AskInputString("Write down new song name and press Enter\n(Empty => skip)");
+            if (!inputString.Equals(""))
             {
-                booleanSong.Name = newName;
+                booleanSong.Name = inputString;
                 if (saveFile.songExists(saveFile.GetSongs(), booleanSong) && (selectedSong.Name != booleanSong.Name))
                 {
                     Console.WriteLine($"Song name { booleanSong.Name } already exists! Cancelling...");
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey();
+                    conCom.AskInputKey("Press any key to continue...");
                     return;
                 }
-                songCopy.Name = newName;
-                Console.WriteLine($"{ newName } set to new name!\n");
-                newNameEdited = true;
+                songCopy.Name = inputString;
+                Console.WriteLine($"{ inputString } set to new name!\n");
             }
             else
             {
-                newNameEdited = false;
                 Console.WriteLine("Name edit skipped\n");
             }
+            //EDIT DATETIME
             DateTime newLastPlayed;
-            Console.WriteLine("Write down new last playdate in 'DD.MM.YYYY' format and press Enter\n(Empty or invalid => skip)");
-            string newPlaytime = Console.ReadLine();
-            if (!newPlaytime.Equals(""))
+            inputString = conCom.AskInputString("Write down new last playdate in 'DD.MM.YYYY' format and press Enter\n(Empty or invalid => skip)");
+            if (!inputString.Equals(""))
             {
-                try
+                newLastPlayed = conCom.StringToDatetime(inputString);
+                if(conCom.IsValidDatetime(newLastPlayed))
                 {
-                    newLastPlayed = DateTime.ParseExact(newPlaytime, "dd.MM.yyyy", null);
-                    if ((DateTime.Now - newLastPlayed).TotalDays < 0)
-                    {
-                        Console.WriteLine($"Playdate edit skipped, { newPlaytime } is invalid.\n");
-                        goto dateSkip;
-                    }
                     songCopy.LastPlaytime = newLastPlayed;
                     Console.WriteLine($"{ newLastPlayed:dd/MM/yyyy} set to last playdate!\n");
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Playdate edit skipped, { newPlaytime } is invalid.\n");
-                    newPlaytime = "";
+                    Console.WriteLine($"Playdate edit skipped, { inputString } is invalid.\n");
                 }
             }
             else
             {
                 Console.WriteLine("Playdate edit skipped\n");
             }
-            dateSkip:
-            Console.WriteLine("Write down new priority from 1 - 10 and press Enter\n(Empty or invalid => skip)");
-            string newPriority = Console.ReadLine();
-            if (!newPriority.Equals(""))
+            //EDIT PRIORITY
+            inputInt = conCom.AskInputNumber("Write down new priority from 1 - 10 and press Enter\n(Empty or invalid => skip)");
+            if (!inputInt.Equals(""))
             {
-                try
+                if(inputInt >= 0 && inputInt <= 10)
                 {
-                    int number = int.Parse(newPriority.ToString());
-                    if (number <= 0 || number > 10)
-                    {
-                        Console.WriteLine("Priority edit skipped\n");
-                        newPriority = "";
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{ newPriority } set to new priority!\n");
-                        songCopy.Priority = number;
-                    }
+                    Console.WriteLine($"{ inputInt } set to new priority!\n");
+                    songCopy.Priority = inputInt;
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Skipped, { newPriority } is invalid.\n");
-                    newPriority = "";
+                    Console.WriteLine("Priority edit skipped\n");
                 }
             }
             else
             {
                 Console.WriteLine("Priority edit skipped\n");
             }
-            Console.WriteLine("Write down new latest performance from 1 - 10 and press Enter\n(Empty or invalid => skip)");
-            string newPerformance = Console.ReadLine();
-            if (!newPerformance.Equals(""))
+            //EDIT PERFORMANCE
+            inputInt = conCom.AskInputNumber("Write down new latest performance from 1 - 10 and press Enter\n(Empty or invalid => skip)");
+            if (!inputInt.Equals(""))
             {
-                try
+                if (inputInt >= 0 && inputInt <= 10)
                 {
-                    int number = int.Parse(newPerformance.ToString());
-                    if (number <= 0 || number > 10)
-                    {
-                        Console.WriteLine("Latest performance edit skipped\n");
-                        newPerformance = "";
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{ newPerformance } set to new latest performance!\n");
-                        songCopy.LastPlayedPerformance = number;
-                    }
+                    Console.WriteLine($"{ inputInt } set to new latest performance!\n");
+                    songCopy.LastPlayedPerformance = inputInt;
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Skipped, { newPerformance } is invalid.\n");
-                    newPerformance = "";
+                    Console.WriteLine("Latest performance edit skipped\n");
                 }
             }
             else
             {
                 Console.WriteLine("Latest performance edit skipped\n");
             }
-            if (newNameEdited)
-            {
-                var deletedList = saveFile.DeleteSong(allSongs, selectedSong);
-                var addedList = saveFile.AddSong(deletedList, songCopy);
-                saveFile.SaveSongs(addedList);
-            }
-            else
-            {
-                var editedList = saveFile.EditSong(allSongs, songCopy);
-                saveFile.SaveSongs(editedList);
-            }
+            //SAVE EDITED SONG
+            var editedList = saveFile.EditSong(allSongs, songCopy);
+            saveFile.SaveSongs(editedList);
             Console.WriteLine($"Editing is done!\n");
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
-            Console.WriteLine("");
+            conCom.AskInputKey("Press any key to continue...");
         }
     }
 }
-
-/*
-            //Yks hyvä esimerkki probleema tuli vastaan bugitestauksessa: 
-            var song1 = new Song();
-            song1.Name = "Jannen laulu";
-
-            var song2 = new Song();
-            song2.Name = song1.Name;
-
-            var song3 = song1;
-            song3.Name = "Sibelius laulu";
-
-            //Mitä konsoli tulostaa?
-            Console.WriteLine("Song1 name: " + song1.Name);
-            Console.WriteLine("Song2 name: " + song2.Name);
-            Console.WriteLine("Song3 name: " + song3.Name);
-            */
