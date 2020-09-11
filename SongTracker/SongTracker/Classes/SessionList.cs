@@ -96,25 +96,19 @@ namespace SongTracker.Classes
             {
                 Console.WriteLine("Great work!");
                 inputInt = conCom.AskInputNumber("On a scale from 1 to 10, how well did it go?");
-                try
-                {
-                    if (inputInt >= 1 && inputInt <= 10)
-                    {
-                        selectedSong.LastPlayedPerformance = inputInt;
-                        selectedSong.LastPlaytime = DateTime.Now;
-                        Console.WriteLine($"You rated { selectedSong.Name } as { inputInt }/10!\n");
-                        var editedList = saveFile.EditSong(saveFile.GetSongs(), selectedSong);
-                        saveFile.SaveSongs(editedList);
-                        generatedList.Remove(songCopy);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{ inputInt } in not a valid rating!\n");
-                    }
+                    
+                if (inputInt >= 1 && inputInt <= 10)  
+                {  
+                    selectedSong.LastPlayedPerformance = inputInt;
+                    selectedSong.LastPlaytime = DateTime.Now;
+                    Console.WriteLine($"You rated { selectedSong.Name } as { inputInt }/10!\n");
+                    var editedList = saveFile.EditSong(saveFile.GetSongs(), selectedSong);
+                    saveFile.SaveSongs(editedList);
+                    generatedList.Remove(songCopy);
                 }
-                catch
+                else
                 {
-                    Console.WriteLine($"Not a valid number!\n");
+                    Console.WriteLine($"Not a valid rating!\n");
                 }
             }
         }
