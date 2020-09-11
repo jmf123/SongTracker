@@ -96,7 +96,6 @@ namespace SongTracker.Classes
             {
                 Console.WriteLine("Great work!");
                 inputInt = conCom.AskInputNumber("On a scale from 1 to 10, how well did it go?");
-                    
                 if (inputInt >= 1 && inputInt <= 10)  
                 {  
                     selectedSong.LastPlayedPerformance = inputInt;
